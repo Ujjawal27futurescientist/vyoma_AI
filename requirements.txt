@@ -1,6 +1,4 @@
 streamlit
-langchain
-langchain-openai
-langchain-community
 python-dotenv
+openai
 tavily-python
