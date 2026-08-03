@@ -63,7 +63,7 @@ def run_investigation(user_input, history):
 
     # 3. Ask the FREE Llama 3 model to think and answer
     response = brain.chat.completions.create(
-        model="qwen/qwen-2.5-7b-instruct:free", # <-- THIS IS THE FREE MODEL
+        model="google/gemma-2-9b-it:free", # <-- THIS IS THE FREE MODEL
         temperature=0, 
         messages=messages
     )
