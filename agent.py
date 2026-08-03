@@ -65,7 +65,7 @@ def run_investigation(user_input, history):
         "X-Title": "Vyoma AI"
     }
     payload = {
-        "model": "google/gemma-2-9b-it:free",
+        "model": "meta-llama/llama-3-8b-instruct:free",
         "temperature": 0,
         "messages": messages
     }
