@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from openai import OpenAI
+import requests
 from tavily import TavilyClient
 
 # --- LOAD SECRETS (Cloud vs Local) ---
@@ -14,11 +14,6 @@ except KeyError:
     tavily_key = os.getenv("TAVILY_API_KEY")
 
 # --- INITIALIZE TOOLS ---
-# We use the OpenAI library, but point it to OpenRouter's free Llama 3!
-brain = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=router_key,
-)
 eyes = TavilyClient(api_key=tavily_key)
 
 # --- THE CRITICAL THINKING PROMPT ---
@@ -61,11 +56,23 @@ def run_investigation(user_input, history):
         "content": f"QUESTION: {user_input}\n\nLIVE SEARCH RESULTS:\n{context}"
     })
 
-    # 3. Ask the FREE Llama 3 model to think and answer
-    response = brain.chat.completions.create(
-        model="google/gemma-2-9b-it:free", # <-- THIS IS THE FREE MODEL
-        temperature=0, 
-        messages=messages
-    )
+    # 3. Direct API call to OpenRouter (NO openai library!)
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {router_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://vyoma.streamlit.app",
+        "X-Title": "Vyoma AI"
+    }
+    payload = {
+        "model": "google/gemma-2-9b-it:free",
+        "temperature": 0,
+        "messages": messages
+    }
     
-    return response.choices[0].message.content
+    response = requests.post(url, json=payload, headers=headers)
+    
+    if response.status_code != 200:
+        return f"<answer>Error: {response.text}</answer>"
+    
+    return response.json()["choices"][0]["message"]["content"]
