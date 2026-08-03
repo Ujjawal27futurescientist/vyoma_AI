@@ -1,22 +1,21 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from openai import OpenAI
+import google.generativeai as genai
 from tavily import TavilyClient
 
 # --- LOAD SECRETS (Cloud vs Local) ---
 try:
-    # Try to get keys from Streamlit Cloud
-    openai_key = st.secrets["OPENAI_API_KEY"]
+    gemini_key = st.secrets["GEMINI_API_KEY"]
     tavily_key = st.secrets["TAVILY_API_KEY"]
 except KeyError:
-    # If running locally, get keys from .env file
     load_dotenv()
-    openai_key = os.getenv("OPENAI_API_KEY")
+    gemini_key = os.getenv("GEMINI_API_KEY")
     tavily_key = os.getenv("TAVILY_API_KEY")
 
 # --- INITIALIZE TOOLS ---
-brain = OpenAI(api_key=openai_key)
+genai.configure(api_key=gemini_key)
+brain = genai.GenerativeModel('gemini-2.0-flash')
 eyes = TavilyClient(api_key=tavily_key)
 
 # --- THE CRITICAL THINKING PROMPT ---
@@ -48,25 +47,21 @@ def run_investigation(user_input, history):
     except Exception as e:
         context = f"(Live search failed: {e})"
 
-    # 2. Build the message history for OpenAI
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    # 2. Build the message history for Gemini
+    messages = [{"role": "user", "parts": [SYSTEM_PROMPT]}]
     
     # Add past conversation (limit to last 6 messages to save memory)
     for msg in history[-6:]:
-        role = "user" if msg["role"] == "user" else "assistant"
-        messages.append({"role": role, "content": msg["content"]})
+        role = "user" if msg["role"] == "user" else "model"
+        messages.append({"role": role, "parts": [msg["content"]]})
         
     # Add the current question and search results
     messages.append({
         "role": "user", 
-        "content": f"QUESTION: {user_input}\n\nLIVE SEARCH RESULTS:\n{context}"
+        "parts": [f"QUESTION: {user_input}\n\nLIVE SEARCH RESULTS:\n{context}"]
     })
 
     # 3. Ask the brain to think and answer
-    response = brain.chat.completions.create(
-        model="gpt-4o-mini", 
-        temperature=0, 
-        messages=messages
-    )
+    response = brain.generate_content(messages)
     
-    return response.choices[0].message.content
+    return response.text
