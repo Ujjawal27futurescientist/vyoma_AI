@@ -98,12 +98,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- DISPLAY LOGO AT TOP OF MAIN AREA ---
-st.markdown('<div class="logo-container"><img src="vyoma_logo.png" alt="Vyoma AI"></div>', unsafe_allow_html=True)
+st.markdown('<div class="logo-container"><img src="images/vyoma_logo.png" alt="Vyoma AI"></div>', unsafe_allow_html=True)
 
 # --- SIDEBAR BRANDING ---
 with st.sidebar:
     try:
-        st.image("vyoma_logo.png", width=80)
+        st.image("images/vyoma_logo.png", width=80)
     except Exception:
         st.markdown("# 🧠")
     st.title("Vyoma AI")
