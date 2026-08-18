@@ -8,7 +8,6 @@ st.set_page_config(
     page_icon="vyoma_logo.png",  # Fallback to emoji if file missing
     layout="wide",
     initial_sidebar_state="expanded",
-    initial_sidebar_state="expanded",
 )
 
 # --- LIGHT LIVELY CSS (No blur for performance) ---
