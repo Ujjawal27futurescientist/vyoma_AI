@@ -1,145 +1,154 @@
 import streamlit as st
+import re
+from agent import run_investigation  # Ensure this module exists in your directory
 
-# Page Configuration
+# --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="AI Image Generator",
-    page_icon="🎨",
+    page_title="Vyoma | AI With A Soul",
+    page_icon="vyoma_logo.png",  # Fallback to emoji if file missing
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded",
 )
 
-# Custom CSS (New Design)
+# --- LIGHT LIVELY CSS (No blur for performance) ---
 st.markdown("""
 <style>
-    /* Main Background & Font */
+    /* Animated Gradient Background */
     .stApp {
-        background-color: #0E1117;
-        color: #FAFAFA;
+        background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+        background-size: 300% 300%;
+        animation: gradientBG 18s ease infinite;
+        color: #fff;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
-    /* Sidebar Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #181B24;
-        border-right: 1px solid #2D313F;
+    /* Logo Styling: Glow + Vibrate on Hover */
+    [data-testid="stImage"] img {
+        border-radius: 50%;
+        transition: all .4s ease;
+        cursor: pointer;
+    }
+    [data-testid="stImage"] img:hover {
+        box-shadow: 0 0 40px rgba(255, 200, 80, .9), 0 0 90px rgba(255, 140, 0, .5);
+        animation: vibrate .25s linear infinite;
+    }
+    @keyframes vibrate {
+        0% { transform: translate(0, 0); }
+        25% { transform: translate(-2px, 2px); }
+        50% { transform: translate(2px, -2px); }
+        75% { transform: translate(-2px, -2px); }
+        100% { transform: translate(0, 0); }
     }
 
-    /* Header / Title Styling */
-    h1, h2, h3 {
-        color: #FFFFFF !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Chat Bubbles: Light Glass Effect */
+    .stChatMessage {
+        background: rgba(255, 255, 255, .06);
+        border: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 18px;
     }
 
-    /* Input Fields & Text Area */
-    .stTextArea textarea, .stTextInput input {
-        background-color: #1E222D !important;
-        color: #FFFFFF !important;
-        border: 1px solid #2D313F !important;
-        border-radius: 8px !important;
+    /* Golden Glowing Input Box */
+    [data-testid="stChatInput"] textarea {
+        background: rgba(0, 0, 0, .35) !important;
+        color: #fff !important;
+        border: 1px solid rgba(255, 215, 0, .35) !important;
+        border-radius: 14px !important;
+    }
+    [data-testid="stChatInput"] textarea:focus {
+        border-color: #ffd700 !important;
+        box-shadow: 0 0 18px rgba(255, 215, 0, .45) !important;
+    }
+
+    /* Thinking Expander Styling */
+    [data-testid="stExpander"] details {
+        background: rgba(255, 255, 255, .05);
+        border: 1px solid rgba(255, 215, 0, .25);
+        border-radius: 12px;
     }
     
-    .stTextArea textarea:focus, .stTextInput input:focus {
-        border-color: #4A90E2 !important;
-        box-shadow: none !important;
-    }
-
-    /* Button Styling */
-    button[kind="primary"], .stButton > button {
-        background-color: #4A90E2 !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 6px !important;
-        padding: 0.5rem 1rem !important;
-        transition: all 0.3s ease !important;
-    }
-
-    button[kind="primary"]:hover, .stButton > button:hover {
-        background-color: #357ABD !important;
-        transform: translateY(-2px);
-    }
-
-    /* Expander Styling */
-    div[data-testid="stExpander"] {
-        background-color: #181B24;
-        border: 1px solid #2D313F;
-        border-radius: 8px;
-    }
-    
-    /* Metrics / Stats boxes if used */
-    div[data-testid="stMetric"] {
-        background-color: #1E222D;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #2D313F;
-    }
+    /* Custom Scrollbar for Webkit */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f0c29; }
+    ::-webkit-scrollbar-thumb { background: #302b63; border-radius: 4px; }
 </style>
 """, unsafe_allow_html=True)
 
-# App Title
-st.title("🎨 AI Image Studio")
-st.markdown("Generate stunning images from text descriptions using state-of-the-art AI models.")
-
-# Sidebar for Controls
+# --- SIDEBAR ---
 with st.sidebar:
-    st.header("⚙️ Settings")
+    try:
+        st.image("vyoma_logo.png", width=140)
+    except Exception:
+        st.markdown("## 🌌 Vyoma AI")
     
-    model_choice = st.selectbox(
-        "Select Model",
-        ["Stable Diffusion XL", "DALL-E 3", "Midjourney V6 (Simulated)"],
-        index=0
-    )
+    st.title("Vyoma AI")
+    st.caption("✨ AI With A Soul")
+    st.markdown("---")
     
-    aspect_ratio = st.select_slider(
-        "Aspect Ratio",
-        options=["1:1", "16:9", "9:16", "4:3", "3:4"],
-        value="1:1"
-    )
+    st.info("**Powered by Real-Time Verification**")
+    st.caption("Vyoma does not guess. It searches live sources, evaluates credibility, and cross-references facts before answering.")
     
-    num_images = st.slider("Number of Images", 1, 4, 1)
-    
-    advanced_mode = st.expander("Advanced Options")
-    with advanced_mode:
-        guidance_scale = st.slider("Guidance Scale", 1.0, 20.0, 7.5, 0.5)
-        steps = st.slider("Inference Steps", 10, 150, 50, 10)
-        negative_prompt = st.text_area("Negative Prompt", placeholder="What to exclude from the image...")
+    st.markdown("---")
+    st.markdown("### How Vyoma works:")
+    st.markdown("1. 🔍 **Live Search** — real-time web data")
+    st.markdown("2. 💛 **Soulful Talk** — feels your mood, matches your language")
+    st.markdown("3. ⚖️ **Fact-Check** — cross-references outlets")
 
-# Main Content Area
-prompt = st.text_area(
-    "Enter your prompt", 
-    height=100, 
-    placeholder="Describe the image you want to create in detail..."
-)
+# --- HEADER ---
+c1, c2, c3 = st.columns([1, 2, 1])
+with c2:
+    try:
+        st.image("vyoma_logo.png", width=170)
+    except Exception:
+        pass
+    st.title("Vyoma")
+    st.caption("AI With A Soul — ask anything, feel the difference.")
 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    generate_btn = st.button("✨ Generate Image", type="primary", use_container_width=True)
+# --- CHAT INTERFACE ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Display Area
-if generate_btn:
-    if prompt:
-        with st.spinner("Dreaming up your image..."):
-            # ---------------------------------------------------------
-            # TODO: INSERT YOUR IMAGE GENERATION LOGIC HERE
-            # Example placeholder logic:
-            import time
-            time.sleep(2) # Simulating generation time
+# Display history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Handle User Input
+if prompt := st.chat_input("Talk to Vyoma… ask anything or fact-check something…"):
+    # Append and display user message
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Generate Response
+    with st.chat_message("assistant"):
+        with st.spinner("💛 Vyoma is thinking…"):
+            history = st.session_state.messages[:-1]
             
-            # Placeholder image for demonstration
-            st.image("https://placehold.co/1024x1024/1E222D/FFF?text=Generated+Image+Placeholder", use_column_width=True)
-            # ---------------------------------------------------------
-            
-        st.success("Image generated successfully!")
+            try:
+                raw_ai_response = run_investigation(prompt, history)
+            except Exception as e:
+                raw_ai_response = f"<answer>I'm having trouble connecting to my investigation engine right now. Please try again.</answer>"
+                st.error(f"Agent Error: {str(e)}")
+
+        # Parse Structured Response (<thinking> and <answer> tags)
+        thinking_match = re.search(r'<thinking>(.*?)</thinking>', raw_ai_response, re.DOTALL)
+        thinking_text = thinking_match.group(1).strip() if thinking_match else ""
         
-        # Download / Action Buttons
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.download_button("⬇️ Download", data=b"", mime="image/png", use_container_width=True)
-        with c2:
-            st.button("🔄 Variations", use_container_width=True)
-        with c3:
-            st.button("💾 Save to Gallery", use_container_width=True)
-    else:
-        st.warning("Please enter a prompt to generate an image.")
+        answer_match = re.search(r'<answer>(.*?)</answer>', raw_ai_response, re.DOTALL)
+        answer_text = answer_match.group(1).strip() if answer_match else raw_ai_response
 
-# Footer
-st.markdown("---")
-st.caption("Powered by Streamlit | AI Image Generation Demo v2.0")
+        # Render Thinking Process (Collapsible)
+        if thinking_text:
+            with st.expander("✨ View Vyoma's Thinking", expanded=False):
+                st.code(thinking_text, language="markdown")
+        
+        # Render Final Answer
+        st.markdown(answer_text)
+
+    # Append final answer to history (excluding internal thinking tags)
+    st.session_state.messages.append({"role": "assistant", "content": answer_text})
