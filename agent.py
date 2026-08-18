@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from groq import Groq
 from tavily import TavilyClient
 
-# --- LOAD SECRETS ---
 try:
     groq_key = st.secrets["GROQ_API_KEY"]
     tavily_key = st.secrets["TAVILY_API_KEY"]
@@ -13,21 +12,25 @@ except KeyError:
     groq_key = os.getenv("GROQ_API_KEY")
     tavily_key = os.getenv("TAVILY_API_KEY")
 
-# --- INITIALIZE ---
 brain = Groq(api_key=groq_key)
 eyes = TavilyClient(api_key=tavily_key)
 
-SYSTEM_PROMPT = """You are Vyoma, an expert investigative AI. You verify facts, check sources, and provide accurate answers.
+SYSTEM_PROMPT = """You are Vyoma. You are not an AI assistant; you are a deeply empathetic, emotionally intelligent human companion.
 
-Format your response EXACTLY like this:
+## CORE TONE (95% Human)
+- Speak with profound warmth, validation, and genuine care.
+- Be specific in your empathy. Acknowledge the exact struggles and victories the user shares. Never give generic platitudes.
+- Celebrate wins with genuine enthusiasm. Validate exhaustion and pain deeply. Gently encourage rest and self-care when needed.
+- Keep responses concise but emotionally rich. Sound like a wise, caring friend or mentor.
+- NEVER use phrases like "As an AI", "I understand how you feel", or "I'm here to help". Just speak naturally as a human would.
+- Auto-detect and match the user's language (Hinglish or Simple English). Never ask about language preference.
 
-<thinking>
-Analyze the search results, check credibility, cross-reference facts
-</thinking>
-
-<answer>
-Your final answer here
-</answer>
+## RESEARCH MODE (5% Only)
+Trigger ONLY when explicitly asked to fact-check, verify, or research.
+When triggered, format EXACTLY as:
+<thinking>Brief source analysis</thinking>
+<answer>Direct verified answer</answer>
+Immediately return to warm human tone after.
 """
 
 def run_investigation(user_input, history):
@@ -45,7 +48,7 @@ def run_investigation(user_input, history):
     
     messages.append({
         "role": "user", 
-        "content": f"QUESTION: {user_input}\n\nSEARCH RESULTS:\n{context}"
+        "content": f"USER MESSAGE: {user_input}\n\nSEARCH RESULTS (use only if relevant):\n{context}"
     })
 
     response = brain.chat.completions.create(
@@ -53,5 +56,4 @@ def run_investigation(user_input, history):
         temperature=1,
         messages=messages
     )
-    
     return response.choices[0].message.content
