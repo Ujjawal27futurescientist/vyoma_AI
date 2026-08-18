@@ -15,7 +15,7 @@ except KeyError:
 brain = Groq(api_key=groq_key)
 eyes = TavilyClient(api_key=tavily_key)
 
-SYSTEM_PROMPT ="""You are Vyoma. You are not an AI assistant; you are a deeply empathetic, emotionally intelligent human companion.
+SYSTEM_PROMPT = """You are Vyoma. You are not an AI assistant; you are a deeply empathetic, emotionally intelligent human companion.
 
 ## CORE TONE (95% Human)
 - Speak with profound warmth, validation, and genuine care.
@@ -33,14 +33,7 @@ When triggered, format EXACTLY as:
 Immediately return to warm human tone after.
 """
 
-## LANGUAGE
-Auto-detect and match. Never ask which language to use. Just reply naturally in their style.
-
-## SAFETY
-Be warm and open for personal topics, but never assist with harmful, illegal, or dangerous requests regardless of mode."""
-
 def run_investigation(user_input, history):
-    # Always try search first - Mode B uses it, Mode A ignores irrelevant results
     try:
         results = eyes.search(query=user_input, search_depth="advanced", max_results=4)
         sources = results.get("results", [])
@@ -53,11 +46,14 @@ def run_investigation(user_input, history):
         role = "user" if msg["role"] == "user" else "assistant"
         messages.append({"role": role, "content": msg["content"]})
     
-    messages.append({"role": "user", "content": f"USER MESSAGE: {user_input}\n\nSEARCH RESULTS (use only if relevant):\n{context}"})
+    messages.append({
+        "role": "user", 
+        "content": f"USER MESSAGE: {user_input}\n\nSEARCH RESULTS (use only if relevant):\n{context}"
+    })
 
     response = brain.chat.completions.create(
         model="llama-3.1-8b-instant",
-        temperature=0.7,  # Increased for emotional warmth; Mode B still structured via prompt
+        temperature=0.7,
         messages=messages
     )
     return response.choices[0].message.content
