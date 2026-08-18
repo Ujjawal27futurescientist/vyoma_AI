@@ -10,34 +10,100 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS FOR THE PREMIUM DARK LOOK ---
+# --- LIVELY 3D UI STYLES (REPLACES OLD CSS) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #0e1117; }
+    /* 1. Animated Deep Space Background */
+    .stApp {
+        background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        color: #ffffff;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* 2. 3D Logo with Glow and Color Shift on Hover */
+    .logo-container {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-top: 20px;
+    }
+    .logo-container img {
+        width: 220px;
+        border-radius: 50%;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+        transition: all 0.5s ease;
+        cursor: pointer;
+    }
+    .logo-container img:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 60px rgba(255, 215, 0, 1), 0 0 100px rgba(255, 100, 0, 0.6);
+        animation: vibrate 0.2s linear infinite, hueShift 2s infinite;
+    }
+    @keyframes vibrate {
+        0% { transform: translate(0, 0) scale(1.1); }
+        25% { transform: translate(-2px, 2px) scale(1.1); }
+        50% { transform: translate(2px, -2px) scale(1.1); }
+        75% { transform: translate(-2px, -2px) scale(1.1); }
+        100% { transform: translate(2px, 2px) scale(1.1); }
+    }
+    @keyframes hueShift {
+        0% { filter: hue-rotate(0deg); }
+        50% { filter: hue-rotate(45deg); }
+        100% { filter: hue-rotate(0deg); }
+    }
+
+    /* 3. Glassmorphism Chat Bubbles & Sidebar */
+    .stChatMessage, section[data-testid="stSidebar"] {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* 4. Glowing Input Box */
+    .stChatInput > div > div > input {
+        background: rgba(0, 0, 0, 0.4);
+        color: #fff !important;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+    .stChatInput > div > div > input:focus {
+        border-color: #ffd700;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    /* 5. Expander Styling for Analysis Protocol */
     .streamlit-expanderHeader {
-        background-color: #161b22 !important;
-        color: #58a6ff !important;
+        background-color: rgba(255, 215, 0, 0.1) !important;
+        color: #ffd700 !important;
         font-weight: bold;
-        border-radius: 8px;
-        border: 1px solid #30363d;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 215, 0, 0.3);
     }
     .streamlit-expanderContent {
-        background-color: #0d1117;
-        border-left: 3px solid #58a6ff;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-left: 3px solid #ffd700;
         font-family: 'Courier New', monospace;
-        color: #c9d1d9;
-    }
-    section[data-testid="stSidebar"] {
-        background-color: #161b22;
-        border-right: 1px solid #30363d;
+        color: #e0e0e0;
+        border-radius: 0 0 10px 10px;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# --- DISPLAY LOGO AT TOP OF MAIN AREA ---
+st.markdown('<div class="logo-container"><img src="vyoma_logo.png" alt="Vyoma AI"></div>', unsafe_allow_html=True)
+
 # --- SIDEBAR BRANDING ---
 with st.sidebar:
     try:
-        st.image("images/vyoma_logo.png", width=100)
+        st.image("vyoma_logo.png", width=80)
     except Exception:
         st.markdown("# 🧠")
     st.title("Vyoma AI")
@@ -48,7 +114,7 @@ with st.sidebar:
     st.markdown("### How Vyoma works:")
     st.markdown("1. 🔍 **Live Search**: Accesses real-time web data.")
     st.markdown("2. 🧠 **Critical Analysis**: Evaluates source bias.")
-    st.markdown("3. ⚖️ **Fact-Check**: Cross-references multiple outlets.")
+    st.markdown("3. ️ **Fact-Check**: Cross-references multiple outlets.")
 
 # --- MAIN CHAT INTERFACE ---
 st.title("🧠 Vyoma Critical Intelligence")
