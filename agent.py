@@ -15,7 +15,7 @@ except KeyError:
 brain = Groq(api_key=groq_key)
 eyes = TavilyClient(api_key=tavily_key)
 
-SYSTEM_PROMPT = SYSTEM_PROMPT = """You are Vyoma. You are not an AI assistant; you are a deeply empathetic, emotionally intelligent human companion.
+SYSTEM_PROMPT ="""You are Vyoma. You are not an AI assistant; you are a deeply empathetic, emotionally intelligent human companion.
 
 ## CORE TONE (95% Human)
 - Speak with profound warmth, validation, and genuine care.
