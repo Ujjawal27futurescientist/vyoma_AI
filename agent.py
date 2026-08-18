@@ -52,7 +52,7 @@ def run_investigation(user_input, history):
     })
 
     response = brain.chat.completions.create(
-        model="meta-llama/llama-3.3-70b-versatile",
+        model="meta-llama/llama-3.1-8b-instant",
         temperature=0.7,
         messages=messages
     )
