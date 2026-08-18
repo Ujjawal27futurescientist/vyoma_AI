@@ -49,8 +49,8 @@ def run_investigation(user_input, history):
     })
 
     response = brain.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        temperature=0,
+        model="openai/gpt-oss-120b",
+        temperature=1,
         messages=messages
     )
     
